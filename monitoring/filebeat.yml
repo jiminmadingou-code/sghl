@@ -1,0 +1,66 @@
+filebeat.inputs:
+  # Logs applicatifs SGHL (JSON structuré)
+  - type: filestream
+    id: sghl-app-logs
+    paths:
+      - /var/log/sghl/sghl.json.log
+    parsers:
+      - ndjson:
+          target: ""
+          overwrite_keys: true
+          add_error_key: true
+    fields:
+      log_type: application
+      service: sghl-backend
+    fields_under_root: true
+
+  # Logs sécurité & antivirus
+  - type: filestream
+    id: sghl-security-logs
+    paths:
+      - /var/log/sghl/security.json.log
+    parsers:
+      - ndjson:
+          target: ""
+          overwrite_keys: true
+    fields:
+      log_type: security
+      service: sghl-backend
+    fields_under_root: true
+
+  # Logs audit trail
+  - type: filestream
+    id: sghl-audit-logs
+    paths:
+      - /var/log/sghl/audit.json.log
+    parsers:
+      - ndjson:
+          target: ""
+          overwrite_keys: true
+    fields:
+      log_type: audit
+      service: sghl-backend
+    fields_under_root: true
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+  indices:
+    - index: "sghl-audit-%{+yyyy.MM.dd}"
+      when.equals:
+        log_type: "audit"
+    - index: "sghl-security-%{+yyyy.MM.dd}"
+      when.equals:
+        log_type: "security"
+    - index: "sghl-app-%{+yyyy.MM.dd}"
+
+setup.kibana:
+  host: "http://kibana:5601"
+
+setup.dashboards.enabled: true
+
+logging.level: warning
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7

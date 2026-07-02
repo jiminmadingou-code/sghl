@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><title>Facture — CHU</title>
+<style>body{margin:0;padding:0;background:#f4f7fb;font-family:'Segoe UI',Arial,sans-serif}.wrap{max-width:600px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(30,64,175,.10)}.header{background:linear-gradient(135deg,#0a1628 0%,#1d4ed8 100%);padding:32px 40px;text-align:center}.header h1{color:#fff;font-size:22px;font-weight:800;margin:0 0 4px}.header p{color:#93c5fd;font-size:13px;margin:0}.body{padding:36px 40px}.body h2{font-size:20px;font-weight:700;color:#0f2044;margin:0 0 8px}.body p{font-size:15px;line-height:1.7;color:#475569;margin:0 0 16px}.invoice-card{background:#fffbeb;border:2px solid #fcd34d;border-radius:12px;padding:20px 24px;margin:20px 0}.invoice-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #fde68a;font-size:14px}.invoice-row:last-child{border-bottom:none;font-weight:700;font-size:16px;color:#0f2044}.invoice-label{color:#78350f}.invoice-value{color:#0f2044;font-weight:600}.btn{display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:15px;margin:20px 0}.modes{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.mode{background:#f1f5f9;border-radius:8px;padding:8px 14px;font-size:13px;color:#475569}.footer{background:#f8faff;border-top:1px solid #e2eaf6;padding:20px 40px;text-align:center}.footer p{font-size:12px;color:#94a3b8;margin:4px 0}</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div style="font-size:40px;margin-bottom:12px">💳</div>
+    <h1>Facture générée</h1>
+    <p>DIGNE HOSPITAL — Facturation</p>
+  </div>
+  <div class="body">
+    <h2>Bonjour {patient_name},</h2>
+    <p>Une nouvelle facture a été générée pour vos soins au DIGNE HOSPITAL.</p>
+    <div class="invoice-card">
+      <div class="invoice-row">
+        <span class="invoice-label">N° Facture</span>
+        <span class="invoice-value" style="font-family:monospace">{invoice_number}</span>
+      </div>
+      <div class="invoice-row">
+        <span class="invoice-label">Type de prestation</span>
+        <span class="invoice-value">{invoice_type}</span>
+      </div>
+      <div class="invoice-row">
+        <span class="invoice-label">Date d'émission</span>
+        <span class="invoice-value">{invoice_date}</span>
+      </div>
+      <div class="invoice-row">
+        <span class="invoice-label">Montant total</span>
+        <span class="invoice-value" style="color:#d97706">{amount}</span>
+      </div>
+    </div>
+    <p><strong>Modes de paiement acceptés :</strong></p>
+    <div class="modes">
+      <span class="mode">💵 Espèces</span>
+      <span class="mode">📱 Mobile Money</span>
+      <span class="mode">🏦 Virement bancaire</span>
+      <span class="mode">🛡️ Assurance / Tiers-payant</span>
+    </div>
+    <p style="text-align:center">
+      <a href="{portal_url}/patient/factures" class="btn">Voir et payer ma facture</a>
+    </p>
+    <p style="font-size:13px;color:#94a3b8">Pour toute question, contactez notre service facturation au <strong>+224 620 000 005</strong> ou par email à <strong>facturation@digne-hospital.gn</strong>.</p>
+  </div>
+  <div class="footer">
+    <p>© 2025 DIGNE HOSPITAL · Journal comptable immuable · RGPD</p>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,285 @@
+version: '3.8'
+
+# Configuration Production SGHL
+# À utiliser avec: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  # Backend Django - Production
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sghl-backend-prod
+    restart: always
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_NAME=sghl_db
+      - DB_USER=sghl_user
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/1
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - EMAIL_USE_TLS=True
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    networks:
+      - sghl-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/dashboard/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Frontend Vue.js - Production (Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: sghl-frontend-prod
+    restart: always
+    depends_on:
+      - backend
+    networks:
+      - sghl-network
+
+  # PostgreSQL - Production
+  postgres:
+    image: postgres:15-alpine
+    container_name: sghl-postgres-prod
+    restart: always
+    environment:
+      - POSTGRES_DB=sghl_db
+      - POSTGRES_USER=sghl_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_INITDB_ARGS="-E UTF8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - sghl-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sghl_user -d sghl_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+
+  # Redis - Production
+  redis:
+    image: redis:7-alpine
+    container_name: sghl-redis-prod
+    restart: always
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - sghl-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Nginx - Reverse Proxy Production
+  nginx:
+    image: nginx:alpine
+    container_name: sghl-nginx-prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - sghl-network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Worker Email Asynchrone
+  email-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sghl-email-worker
+    restart: always
+    environment:
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_NAME=sghl_db
+      - DB_USER=sghl_user
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/1
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+    networks:
+      - sghl-network
+    command: python manage.py run_email_worker --interval 30
+
+  # Worker Backup
+  backup-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sghl-backup-worker
+    restart: on-failure
+    environment:
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_NAME=sghl_db
+      - DB_USER=sghl_user
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_BUCKET=${AWS_BUCKET}
+      - GPG_PASSPHRASE=${GPG_PASSPHRASE}
+    volumes:
+      - ./backend:/app
+      - backup_volume:/backup
+    networks:
+      - sghl-network
+    command: >
+      sh -c "chmod +x /app/scripts/backup_daily.sh &&
+             /app/scripts/backup_daily.sh"
+    schedules:
+      - cron: "0 2 * * *"  # Tous les jours à 2h
+
+  # Prometheus - Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: sghl-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - sghl-network
+    profiles:
+      - monitoring
+
+  # Grafana - Monitoring
+  grafana:
+    image: grafana/grafana:latest
+    container_name: sghl-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - sghl-network
+    profiles:
+      - monitoring
+
+  # ELK Stack - Logs (Optionnel)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: sghl-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - sghl-network
+    profiles:
+      - logging
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: sghl-logstash
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./monitoring/logstash/patterns:/usr/share/logstash/patterns:ro
+    networks:
+      - sghl-network
+    depends_on:
+      - elasticsearch
+    profiles:
+      - logging
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: sghl-kibana
+    restart: unless-stopped
+    ports:
+      - "5601:5601"
+    networks:
+      - sghl-network
+    depends_on:
+      - elasticsearch
+    profiles:
+      - logging
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  static_volume:
+    driver: local
+  media_volume:
+    driver: local
+  backup_volume:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+
+networks:
+  sghl-network:
+    driver: bridge
+    name: sghl-production-network

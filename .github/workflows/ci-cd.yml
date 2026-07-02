@@ -1,0 +1,185 @@
+name: SGHL — CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop, staging]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+
+jobs:
+
+  # ── Backend Tests ──────────────────────────────────────────────────────────
+  backend-tests:
+    name: Backend — Tests & Sécurité
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: sghl_test
+          POSTGRES_USER: sghl_user
+          POSTGRES_PASSWORD: testpassword
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-django coverage bandit safety
+
+      - name: Django system check
+        working-directory: backend
+        env:
+          DEBUG: 'True'
+          SECRET_KEY: ci-secret-key-not-for-production
+          DB_ENGINE: django.db.backends.sqlite3
+          DB_NAME: ':memory:'
+        run: python manage.py check
+
+      - name: Run migrations
+        working-directory: backend
+        env:
+          DEBUG: 'True'
+          SECRET_KEY: ci-secret-key-not-for-production
+          DB_ENGINE: django.db.backends.sqlite3
+          DB_NAME: ':memory:'
+        run: python manage.py migrate
+
+      - name: Run unit & integration tests with coverage
+        working-directory: backend
+        env:
+          DEBUG: 'True'
+          SECRET_KEY: ci-secret-key-not-for-production
+          DB_ENGINE: django.db.backends.sqlite3
+          DB_NAME: ':memory:'
+        run: |
+          coverage run --source='.' manage.py test tests/ --verbosity=2
+          coverage report --min-coverage=70
+          coverage xml -o coverage.xml
+
+      - name: Security scan — Bandit (SAST)
+        working-directory: backend
+        run: bandit -r . -x ./venv,./tests -f json -o bandit-report.json || true
+
+      - name: Dependency vulnerability check — Safety
+        working-directory: backend
+        run: safety check --json || true
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
+        with:
+          file: backend/coverage.xml
+          flags: backend
+
+  # ── Frontend Build & Tests ─────────────────────────────────────────────────
+  frontend-build:
+    name: Frontend — Build & Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build production bundle
+        working-directory: frontend
+        run: npm run build
+
+      - name: Check bundle size
+        working-directory: frontend
+        run: |
+          BUNDLE_SIZE=$(du -sk dist/ | cut -f1)
+          echo "Bundle size: ${BUNDLE_SIZE}KB"
+          if [ $BUNDLE_SIZE -gt 10240 ]; then
+            echo "WARNING: Bundle size exceeds 10MB"
+          fi
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+          retention-days: 7
+
+  # ── Docker Build ───────────────────────────────────────────────────────────
+  docker-build:
+    name: Docker — Build Images
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-build]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: false
+          tags: sghl-backend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: false
+          tags: sghl-frontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── Deploy Staging ─────────────────────────────────────────────────────────
+  deploy-staging:
+    name: Deploy — Staging
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.ref == 'refs/heads/staging'
+    environment: staging
+
+    steps:
+      - name: Deploy to staging
+        run: echo "Déploiement staging — configurer SSH_HOST, SSH_KEY dans les secrets GitHub"
+
+  # ── Deploy Production ──────────────────────────────────────────────────────
+  deploy-production:
+    name: Deploy — Production
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - name: Deploy to production
+        run: echo "Déploiement production — configurer SSH_HOST, SSH_KEY dans les secrets GitHub"

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><title>Résultats disponibles — CHU</title>
+<style>body{margin:0;padding:0;background:#f4f7fb;font-family:'Segoe UI',Arial,sans-serif}.wrap{max-width:600px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(30,64,175,.10)}.header{background:linear-gradient(135deg,#0a1628 0%,#1d4ed8 100%);padding:32px 40px;text-align:center}.header h1{color:#fff;font-size:22px;font-weight:800;margin:0 0 4px}.header p{color:#93c5fd;font-size:13px;margin:0}.body{padding:36px 40px}.body h2{font-size:20px;font-weight:700;color:#0f2044;margin:0 0 8px}.body p{font-size:15px;line-height:1.7;color:#475569;margin:0 0 16px}.result-card{background:#f0fdf4;border:2px solid #86efac;border-radius:12px;padding:20px 24px;margin:20px 0;text-align:center}.result-count{font-size:40px;font-weight:800;color:#16a34a;margin:0 0 4px}.result-label{font-size:14px;color:#166534;font-weight:600}.btn{display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:15px;margin:20px 0}.security-note{background:#eff6ff;border-left:4px solid #2563eb;border-radius:8px;padding:12px 16px;margin:16px 0}.security-note p{color:#1e40af;font-size:13px;margin:0}.footer{background:#f8faff;border-top:1px solid #e2eaf6;padding:20px 40px;text-align:center}.footer p{font-size:12px;color:#94a3b8;margin:4px 0}</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div style="font-size:40px;margin-bottom:12px">🔬</div>
+    <h1>Résultats disponibles</h1>
+    <p>DIGNE HOSPITAL — Laboratoire</p>
+  </div>
+  <div class="body">
+    <h2>Bonjour {patient_name},</h2>
+    <p>Vos résultats d'examens de laboratoire sont maintenant disponibles sur votre espace patient.</p>
+    <div class="result-card">
+      <p class="result-count">{examination_count}</p>
+      <p class="result-label">résultat(s) validé(s) par le biologiste</p>
+    </div>
+    <p>Ces résultats ont été <strong>validés et signés électroniquement</strong> par notre équipe de biologistes. Vous pouvez les consulter et les télécharger en PDF depuis votre espace patient.</p>
+    <div class="security-note">
+      <p>🔒 <strong>Confidentialité :</strong> Vos résultats sont accessibles uniquement depuis votre espace sécurisé. Ne partagez jamais vos identifiants.</p>
+    </div>
+    <p style="text-align:center">
+      <a href="{portal_url}/patient/resultats" class="btn">Consulter mes résultats</a>
+    </p>
+    <p style="font-size:13px;color:#94a3b8">Pour toute question sur vos résultats, contactez votre médecin traitant ou le laboratoire au <strong>+224 620 000 003</strong>.</p>
+  </div>
+  <div class="footer">
+    <p>© 2025 DIGNE HOSPITAL · Données protégées · RGPD</p>
+    <p>Résultats validés le {validation_date}</p>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><title>Rappel RDV — CHU</title>
+<style>body{margin:0;padding:0;background:#f4f7fb;font-family:'Segoe UI',Arial,sans-serif}.wrap{max-width:600px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(30,64,175,.10)}.header{background:linear-gradient(135deg,#0a1628 0%,#1d4ed8 100%);padding:32px 40px;text-align:center}.header h1{color:#fff;font-size:22px;font-weight:800;margin:0 0 4px}.header p{color:#93c5fd;font-size:13px;margin:0}.body{padding:36px 40px}.body h2{font-size:20px;font-weight:700;color:#0f2044;margin:0 0 8px}.body p{font-size:15px;line-height:1.7;color:#475569;margin:0 0 16px}.rdv-card{background:#eff6ff;border:2px solid #2563eb;border-radius:12px;padding:20px 24px;margin:20px 0;text-align:center}.rdv-date{font-size:32px;font-weight:800;color:#1d4ed8;margin:0 0 4px}.rdv-info{font-size:14px;color:#1e40af;margin:4px 0}.btn{display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:15px;margin:20px 0}.btn-cancel{display:inline-block;background:#fff;color:#dc2626;text-decoration:none;padding:12px 24px;border-radius:10px;font-weight:600;font-size:14px;border:2px solid #fca5a5;margin:0 0 0 12px}.footer{background:#f8faff;border-top:1px solid #e2eaf6;padding:20px 40px;text-align:center}.footer p{font-size:12px;color:#94a3b8;margin:4px 0}.alert{background:#fffbeb;border-left:4px solid #f59e0b;border-radius:8px;padding:12px 16px;margin:16px 0}.alert p{color:#92400e;font-size:14px;margin:0}</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div style="font-size:40px;margin-bottom:12px">📅</div>
+    <h1>Rappel de rendez-vous</h1>
+    <p>DIGNE HOSPITAL — SGHL</p>
+  </div>
+  <div class="body">
+    <h2>Bonjour {patient_name},</h2>
+    <p>Nous vous rappelons votre prochain rendez-vous au DIGNE HOSPITAL :</p>
+    <div class="rdv-card">
+      <p class="rdv-date">📅 {appointment_date}</p>
+      <p class="rdv-info">🕐 {appointment_time}</p>
+      <p class="rdv-info">👨‍⚕️ {doctor_name}</p>
+      <p class="rdv-info">🏥 {service} — {location}</p>
+      <p class="rdv-info" style="margin-top:8px;font-weight:700;color:#0f2044">{appointment_type}</p>
+    </div>
+    <div class="alert">
+      <p>⚠️ <strong>Important :</strong> Présentez-vous 15 minutes avant l'heure prévue avec votre carte d'identité et votre carnet de santé.</p>
+    </div>
+    <p style="text-align:center">
+      <a href="{portal_url}/patient/rendez-vous" class="btn">Voir mon rendez-vous</a>
+      <a href="{cancel_url}" class="btn-cancel">Annuler</a>
+    </p>
+    <p style="font-size:13px;color:#94a3b8;text-align:center">En cas d'empêchement, annulez au moins 24h à l'avance. Contact : <strong>+224 620 000 004</strong></p>
+  </div>
+  <div class="footer">
+    <p>© 2025 DIGNE HOSPITAL · Données protégées · RGPD</p>
+  </div>
+</div>
+</body>
+</html>
