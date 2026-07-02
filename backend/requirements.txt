@@ -50,7 +50,7 @@ uvicorn>=0.25.0
 httpx>=0.25.0
 
 # Email Service
-django-mail-admin>=1.0.0
+django-mail-admin>=0.3.2
 
 # PDF Generation
 weasyprint>=60.0
