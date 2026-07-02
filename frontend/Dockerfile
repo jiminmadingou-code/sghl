@@ -21,7 +21,10 @@ FROM nginx:alpine
 # Copy built files
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration
+# Supprime le fichier par défaut s'il existe pour éviter le conflit
+RUN rm -f /etc/nginx/conf.d/default.conf
+
+# Copie ton fichier de configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port
