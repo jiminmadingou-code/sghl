@@ -79,9 +79,79 @@ import json, random, string
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from django.contrib.auth.models import User
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # Stockage temporaire des codes en mémoire (TTL 15 min)
 _confirm_codes = {}
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def patient_register_view(request):
+    """Inscription d'un nouveau patient avec création du compte Django + dossier patient."""
+    try:
+        data = json.loads(request.body)
+        username = data.get('username', '').strip()
+        password = data.get('password', '')
+        confirm_password = data.get('confirm_password', '')
+        email = data.get('email', '').strip().lower()
+        prenom = data.get('prenom', '').strip()
+        nom = data.get('nom', '').strip()
+        date_naissance = data.get('date_naissance', '')
+        sexe = data.get('sexe', 'M')
+        telephone = data.get('telephone', '').strip()
+
+        # Validation
+        if not username or not password or not email or not prenom or not nom:
+            return JsonResponse({'error': 'Tous les champs obligatoires doivent être remplis.'}, status=400)
+        if password != confirm_password:
+            return JsonResponse({'error': 'Les mots de passe ne correspondent pas.'}, status=400)
+        if len(password) < 6:
+            return JsonResponse({'error': 'Le mot de passe doit contenir au moins 6 caractères.'}, status=400)
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({'error': 'Ce numéro d\'identification est déjà utilisé.'}, status=409)
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({'error': 'Cet email est déjà utilisé.'}, status=409)
+
+        # Créer le compte Django User
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            first_name=prenom,
+            last_name=nom,
+        )
+
+        # Créer le dossier Patient associé
+        from patients.models import Patient
+        Patient.objects.create(
+            prenom=prenom,
+            nom=nom,
+            date_naissance=date_naissance,
+            sexe=sexe,
+            telephone=telephone,
+            email=email,
+            user=user,
+        )
+
+        # Générer les tokens JWT
+        refresh = RefreshToken.for_user(user)
+        return JsonResponse({
+            'status': 'ok',
+            'message': 'Compte créé avec succès. Vous pouvez vous connecter.',
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'role': 'Patient',
+            }
+        }, status=201)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 @csrf_exempt
 @require_http_methods(['POST'])
@@ -200,6 +270,7 @@ urlpatterns = [
     path('api/v1/', api.urls),
     path('api/v1/auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/v1/auth/register/', patient_register_view, name='patient_register'),
     path('api/v1/auth/send-confirm-code/', send_confirm_code_view, name='send_confirm_code'),
     path('api/v1/auth/verify-confirm-code/', verify_confirm_code_view, name='verify_confirm_code'),
     path('api/v1/sante/', sante_view, name='sante'),

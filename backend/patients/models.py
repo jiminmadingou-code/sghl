@@ -19,6 +19,15 @@ class Patient(models.Model):
     groupe_sanguin = models.CharField(max_length=3, choices=GROUPE_SANGUIN, blank=True)
     allergies = models.TextField(blank=True)
     antecedents = models.TextField(blank=True)
+
+    # Lien avec le compte utilisateur Django
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='patient_profile',
+    )
     
     # Données sensibles chiffrées
     numero_securise = models.CharField(max_length=50, unique=True, blank=True)
