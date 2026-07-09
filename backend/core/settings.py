@@ -129,13 +129,26 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# CORS
-CORS_ALLOWED_ORIGINS = [
+# CORS — autorise le frontend web + le mobile (sans origine fixe)
+_cors_origins = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
 ] + [o for o in config('CORS_EXTRA_ORIGINS', default='').split(',') if o]
-CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL', default=False, cast=bool)
-CORS_ALLOW_CREDENTIALS = True
+
+# Ajouter automatiquement le domaine Railway
+if _railway_host:
+    _cors_origins.append(f'https://{_railway_host}')
+
+if not DEBUG:
+    # Production : autoriser toutes les origines (mobile React Native, etc.)
+    # On utilise Bearer token JWT, pas de cookies → credentials=False
+    CORS_ALLOW_ALL_ORIGINS = True
+    CORS_ALLOW_CREDENTIALS = False
+else:
+    CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL', default=False, cast=bool)
+    CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS = _cors_origins
 
 # DRF
 REST_FRAMEWORK = {
