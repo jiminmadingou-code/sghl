@@ -7,27 +7,26 @@
 // ── Données démo persistantes en mémoire ─────────────────────────────────────
 const DB = {
   patients: [
-    { id: 1, nom: 'Diallo',  prenom: 'Mamadou',  date_naissance: '1979-03-15', sexe: 'M', telephone: '+242 06 100 0001', groupe_sanguin: 'A+',  statut: 'Hospitalisé', adresse: 'Avenue Charles de Gaulle, Pointe-Noire', allergies: 'Pénicilline', antecedents: 'HTA, Diabète type 2' },
-    { id: 2, nom: 'Koné',    prenom: 'Fatoumata', date_naissance: '1992-07-22', sexe: 'F', telephone: '+242 06 100 0002', groupe_sanguin: 'O+',  statut: 'Actif',        adresse: 'Rue Bouiti, Pointe-Noire',             allergies: '',            antecedents: 'Asthme' },
-    { id: 3, nom: 'Traoré',  prenom: 'Ibrahim',   date_naissance: '1957-11-08', sexe: 'M', telephone: '+242 06 100 0003', groupe_sanguin: 'B-',  statut: 'Actif',        adresse: 'Quartier Loandjili, Pointe-Noire',     allergies: 'Aspirine',    antecedents: 'Cardiopathie' },
-    { id: 4, nom: 'Bah',     prenom: 'Aissatou',  date_naissance: '1996-01-30', sexe: 'F', telephone: '+242 06 100 0004', groupe_sanguin: 'AB+', statut: 'Sorti',        adresse: 'Quartier Tié-Tié, Pointe-Noire',      allergies: '',            antecedents: '' },
-    { id: 5, nom: 'Camara',  prenom: 'Sekou',     date_naissance: '1970-05-12', sexe: 'M', telephone: '+242 06 100 0005', groupe_sanguin: 'O-',  statut: 'Actif',        adresse: 'Avenue de l\'Indépendance',            allergies: '',            antecedents: 'Drépanocytose' },
-    { id: 6, nom: 'Sylla',   prenom: 'Oumou',     date_naissance: '1988-09-03', sexe: 'F', telephone: '+242 06 100 0006', groupe_sanguin: 'A-',  statut: 'Actif',        adresse: 'Rue Poaty Bernard, Pointe-Noire',     allergies: '',            antecedents: '' },
+    { id: 1, nom: 'Koné',    prenom: 'Fatoumata', date_naissance: '1992-07-22', sexe: 'F', telephone: '+242 06 100 0001', groupe_sanguin: 'O+',  statut: 'Hospitalisé', adresse: 'Avenue Charles de Gaulle, Pointe-Noire', allergies: '',            antecedents: 'Asthme' },
+    { id: 2, nom: 'Traoré',  prenom: 'Ibrahim',   date_naissance: '1957-11-08', sexe: 'M', telephone: '+242 06 100 0002', groupe_sanguin: 'B-',  statut: 'Actif',        adresse: 'Rue Bouiti, Pointe-Noire',             allergies: 'Aspirine',    antecedents: 'Cardiopathie' },
+    { id: 3, nom: 'Bah',     prenom: 'Aissatou',  date_naissance: '1996-01-30', sexe: 'F', telephone: '+242 06 100 0003', groupe_sanguin: 'AB+', statut: 'Sorti',        adresse: 'Quartier Tié-Tié, Pointe-Noire',      allergies: '',            antecedents: '' },
+    { id: 4, nom: 'Camara',  prenom: 'Sekou',     date_naissance: '1970-05-12', sexe: 'M', telephone: '+242 06 100 0004', groupe_sanguin: 'O-',  statut: 'Actif',        adresse: 'Avenue de l\'Indépendance',            allergies: '',            antecedents: 'Drépanocytose' },
+    { id: 5, nom: 'Sylla',   prenom: 'Oumou',     date_naissance: '1988-09-03', sexe: 'F', telephone: '+242 06 100 0005', groupe_sanguin: 'A-',  statut: 'Actif',        adresse: 'Rue Poaty Bernard, Pointe-Noire',     allergies: '',            antecedents: '' },
+    { id: 6, nom: 'Barry',   prenom: 'Mariama',   date_naissance: '2001-04-18', sexe: 'F', telephone: '+242 06 100 0006', groupe_sanguin: 'B+',  statut: 'Actif',        adresse: 'Quartier Loandjili, Pointe-Noire',    allergies: '',            antecedents: '' },
   ],
 
   hospitalisations: [
-    { id: 1, patient: 'Koné Fatoumata',  patient_id: 2, service: 'Médecine interne', chambre: 'C-12', lit: 'L-02', medecin: 'Dr. Camara', entree: '2025-06-08', sortie_prev: '2025-06-15', statut: 'Actif' },
-    { id: 2, patient: 'Traoré Ibrahim',  patient_id: 3, service: 'Cardiologie',      chambre: 'C-05', lit: 'L-01', medecin: 'Dr. Bah',    entree: '2025-06-10', sortie_prev: '2025-06-18', statut: 'Actif' },
-    { id: 3, patient: 'Diallo Mamadou',  patient_id: 1, service: 'Médecine interne', chambre: 'C-08', lit: 'L-03', medecin: 'Dr. Camara', entree: '2025-06-09', sortie_prev: '2025-06-16', statut: 'Actif' },
-    { id: 4, patient: 'Sylla Oumou',     patient_id: 6, service: 'Maternité',        chambre: 'M-03', lit: 'L-04', medecin: 'Dr. Diallo', entree: '2025-06-11', sortie_prev: '2025-06-13', statut: 'Sorti' },
+    { id: 1, patient: 'Koné Fatoumata',  patient_id: 1, service: 'Médecine interne', chambre: 'C-12', lit: 'L-02', medecin: 'Dr. Camara', entree: '2025-06-08', sortie_prev: '2025-06-15', statut: 'Actif' },
+    { id: 2, patient: 'Traoré Ibrahim',  patient_id: 2, service: 'Cardiologie',      chambre: 'C-05', lit: 'L-01', medecin: 'Dr. Bah',    entree: '2025-06-10', sortie_prev: '2025-06-18', statut: 'Actif' },
+    { id: 3, patient: 'Sylla Oumou',     patient_id: 5, service: 'Maternité',        chambre: 'M-03', lit: 'L-04', medecin: 'Dr. Diallo', entree: '2025-06-11', sortie_prev: '2025-06-13', statut: 'Sorti' },
   ],
 
   examens: [
-    { id: 1, patient: 'Diallo Mamadou',  type: 'NFS',          prescripteur: 'Dr. Camara', date: '2025-06-12', priorite: 'Urgent', statut: 'Prélèvement',     technicien: 'Lab. Kouyaté' },
-    { id: 2, patient: 'Koné Fatoumata',  type: 'Glycémie',     prescripteur: 'Dr. Bah',    date: '2025-06-12', priorite: 'Normal', statut: 'Saisie résultats', technicien: 'Lab. Kouyaté' },
-    { id: 3, patient: 'Traoré Ibrahim',  type: 'ECG',          prescripteur: 'Dr. Diallo', date: '2025-06-11', priorite: 'Normal', statut: 'Validé',           technicien: 'Lab. Sylla' },
+    { id: 1, patient: 'Koné Fatoumata',  type: 'NFS',          prescripteur: 'Dr. Camara', date: '2025-06-12', priorite: 'Urgent', statut: 'Prélèvement',     technicien: 'Lab. Kouyaté' },
+    { id: 2, patient: 'Traoré Ibrahim',  type: 'Glycémie',     prescripteur: 'Dr. Bah',    date: '2025-06-12', priorite: 'Normal', statut: 'Saisie résultats', technicien: 'Lab. Kouyaté' },
+    { id: 3, patient: 'Bah Aissatou',    type: 'ECG',          prescripteur: 'Dr. Diallo', date: '2025-06-11', priorite: 'Normal', statut: 'Validé',           technicien: 'Lab. Sylla' },
     { id: 4, patient: 'Camara Sekou',    type: 'Radiographie', prescripteur: 'Dr. Camara', date: '2025-06-11', priorite: 'Urgent', statut: 'Publié',           technicien: 'Lab. Sylla' },
-    { id: 5, patient: 'Bah Aissatou',    type: 'Urine ECBU',   prescripteur: 'Dr. Bah',    date: '2025-06-10', priorite: 'Normal', statut: 'Commande',         technicien: '-' },
+    { id: 5, patient: 'Barry Mariama',   type: 'Urine ECBU',   prescripteur: 'Dr. Bah',    date: '2025-06-10', priorite: 'Normal', statut: 'Commande',         technicien: '-' },
   ],
 
   medicaments: [
@@ -39,11 +38,11 @@ const DB = {
   ],
 
   factures: [
-    { id: 'F-2025-001', patient: 'Diallo Mamadou',  date: '2025-06-12', montant: 450000,  paye: 450000,  statut: 'Payée',      type: 'Consultation'    },
-    { id: 'F-2025-002', patient: 'Koné Fatoumata',  date: '2025-06-10', montant: 2800000, paye: 1400000, statut: 'Partielle',  type: 'Hospitalisation' },
-    { id: 'F-2025-003', patient: 'Traoré Ibrahim',  date: '2025-06-11', montant: 180000,  paye: 0,       statut: 'En attente', type: 'Examens'         },
-    { id: 'F-2025-004', patient: 'Bah Aissatou',    date: '2025-06-09', montant: 95000,   paye: 95000,   statut: 'Payée',      type: 'Pharmacie'       },
-    { id: 'F-2025-005', patient: 'Camara Sekou',    date: '2025-06-08', montant: 320000,  paye: 0,       statut: 'En attente', type: 'Consultation'    },
+    { id: 'F-2025-001', patient: 'Koné Fatoumata',  date: '2025-06-12', montant: 450000,  paye: 450000,  statut: 'Payée',      type: 'Consultation'    },
+    { id: 'F-2025-002', patient: 'Traoré Ibrahim',  date: '2025-06-10', montant: 2800000, paye: 1400000, statut: 'Partielle',  type: 'Hospitalisation' },
+    { id: 'F-2025-003', patient: 'Bah Aissatou',    date: '2025-06-11', montant: 180000,  paye: 0,       statut: 'En attente', type: 'Examens'         },
+    { id: 'F-2025-004', patient: 'Camara Sekou',    date: '2025-06-09', montant: 95000,   paye: 95000,   statut: 'Payée',      type: 'Pharmacie'       },
+    { id: 'F-2025-005', patient: 'Barry Mariama',   date: '2025-06-08', montant: 320000,  paye: 0,       statut: 'En attente', type: 'Consultation'    },
   ],
 
   personnel: [
@@ -55,7 +54,7 @@ const DB = {
   ],
 
   audit: [
-    { id: 1, user: 'Dr. Camara',   action: 'CONSULTATION_CREATE', module: 'Patients',      timestamp: '2025-06-12T09:14:22', ip: '192.168.1.10', details: 'Consultation créée pour Diallo Mamadou' },
+    { id: 1, user: 'Dr. Camara',   action: 'CONSULTATION_CREATE', module: 'Patients',      timestamp: '2025-06-12T09:14:22', ip: '192.168.1.10', details: 'Consultation créée pour Koné Fatoumata' },
     { id: 2, user: 'Lab. Kouyaté', action: 'EXAM_VALIDATE',       module: 'Laboratoire',   timestamp: '2025-06-12T10:05:11', ip: '192.168.1.22', details: 'Examen NFS validé' },
     { id: 3, user: 'Inf. Traoré',  action: 'CONSTANTE_SAISIE',    module: 'Soins',         timestamp: '2025-06-12T10:30:00', ip: '192.168.1.15', details: 'Constantes vitales saisies — Traoré Ibrahim' },
     { id: 4, user: 'admin',        action: 'USER_LOGIN',          module: 'Auth',          timestamp: '2025-06-12T08:00:00', ip: '192.168.1.1',  details: 'Connexion administrateur' },
@@ -232,7 +231,7 @@ function loginHandler(body) {
     'chirurgien': { password: 'chirurgien123', role: 'Médecin',    full_name: 'Dr. Barry Mamadou', service: 'Chirurgie',        email: 'chirurgien@sghl.cg' },
     'caissier':   { password: 'caissier123',   role: 'Caissier',   full_name: 'Traoré Aminata',    service: 'Facturation',      email: 'caissier@sghl.cg' },
     'admin':      { password: 'admin123',      role: 'Admin',      full_name: 'Traoré Moussa',     service: 'Direction',        email: 'admin@sghl.cg' },
-    'patient':    { password: 'patient123',    role: 'Patient',    full_name: 'Diallo Mamadou',    service: '',                 email: 'patient@sghl.cg' },
+    'patient':    { password: 'patient123',    role: 'Patient',    full_name: 'Compte Patient',   service: '',                 email: 'patient@sghl.cg' },
   }
   const u = body.username?.toLowerCase()
   const d = DEMO[u]

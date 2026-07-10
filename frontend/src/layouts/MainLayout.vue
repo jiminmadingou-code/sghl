@@ -22,13 +22,13 @@ const timeStr = computed(() => currentTime.value.toLocaleTimeString('fr-FR', { h
 const dateStr = computed(() => currentTime.value.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }))
 
 const alertesCritiques = ref([
-  { id: 1, type: 'danger',  msg: 'Rupture stock : Amoxicilline 500mg',        time: '09:42' },
-  { id: 2, type: 'warning', msg: 'Examen urgent en attente : NFS — Diallo M.', time: '10:05' },
-  { id: 3, type: 'info',    msg: 'Résultats validés disponibles : Koné F.',    time: '10:18' },
+  { id: 1, type: 'danger',  msg: 'Rupture stock : Amoxicilline 500mg',     time: '09:42' },
+  { id: 2, type: 'warning', msg: 'Examen urgent en attente : NFS — Koné F.', time: '10:05' },
+  { id: 3, type: 'info',    msg: 'Résultats validés disponibles : Bah A.',  time: '10:18' },
 ])
 
 const notifications = ref([
-  { id: 1, icon: '🔬', title: 'Résultat validé',      desc: 'NFS — Diallo Mamadou',          time: 'Il y a 5 min',  lu: false },
+  { id: 1, icon: '🔬', title: 'Résultat validé',      desc: 'NFS — Koné Fatoumata',          time: 'Il y a 5 min',  lu: false },
   { id: 2, icon: '💊', title: 'Alerte stock',          desc: 'Amoxicilline < seuil critique', time: 'Il y a 18 min', lu: false },
   { id: 3, icon: '🏥', title: 'Nouvelle admission',    desc: 'Bah Aissatou — Maternité',      time: 'Il y a 32 min', lu: true },
   { id: 4, icon: '📋', title: 'Consultation terminée', desc: 'Dr. Camara — Traoré I.',        time: 'Il y a 1h',     lu: true },

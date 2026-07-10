@@ -22,7 +22,15 @@ const navItems = [
   { name: 'Livret d\'accueil', path: '/patient/livret',            icon: '📖' },
 ]
 
-const patient = computed(() => auth.user || { prenom: 'Mamadou', nom: 'Diallo', nss: 'PAT-00001' })
+const patient = computed(() => {
+  const u = auth.user
+  if (!u) return { prenom: '', nom: '', nss: '' }
+  return {
+    prenom: u.first_name || u.prenom || u.full_name?.split(' ')[0] || '',
+    nom:    u.last_name  || u.nom    || u.full_name?.split(' ').slice(1).join(' ') || '',
+    nss:    u.nss || u.username || '',
+  }
+})
 const initials = computed(() => {
   const p = patient.value
   return ((p.prenom?.[0] || '') + (p.nom?.[0] || '')).toUpperCase() || 'P'

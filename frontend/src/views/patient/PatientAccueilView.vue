@@ -1,11 +1,22 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 
-const patient = ref({
-  prenom: 'Mamadou', nom: 'Diallo', ddn: '1979-03-15',
-  groupe_sanguin: 'A+', medecin: 'Dr. Camara Alpha',
-  nss: 'PAT-00001', assurance: 'CNSS Guinée',
-  allergies: ['Pénicilline'],
+const auth = useAuthStore()
+
+const patient = computed(() => {
+  const u = auth.user
+  if (!u) return { prenom: '', nom: '', ddn: '', groupe_sanguin: '', medecin: '', nss: '', assurance: '', allergies: [] }
+  return {
+    prenom:         u.first_name || u.prenom || u.full_name?.split(' ')[0] || '',
+    nom:            u.last_name  || u.nom    || u.full_name?.split(' ').slice(1).join(' ') || '',
+    ddn:            u.date_naissance || '',
+    groupe_sanguin: u.groupe_sanguin || '',
+    medecin:        u.medecin || '',
+    nss:            u.nss || u.username || '',
+    assurance:      u.assurance || '',
+    allergies:      u.allergies ? [u.allergies] : [],
+  }
 })
 
 const prochainsRdv = ref([
