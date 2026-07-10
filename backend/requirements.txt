@@ -9,6 +9,7 @@ daphne>=4.0.0
 # Database
 psycopg2-binary>=2.9.9
 django-redis>=5.4.0
+dj-database-url>=2.1.0
 
 # Security
 cryptography>=41.0.0
