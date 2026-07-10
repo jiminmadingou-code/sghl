@@ -290,13 +290,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Container(
-                width: 52, height: 52,
+                width: 40, height: 40,
                 decoration: BoxDecoration(
                   color: (a['bg'] as Color).withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: (a['color'] as Color).withValues(alpha: 0.3)),
                 ),
-                child: Center(child: Text(a['image'] as String, style: const TextStyle(fontSize: 24))),
+                child: Center(child: Text(a['image'] as String, style: const TextStyle(fontSize: 18))),
               ),
               const SizedBox(height: 9),
               Text(a['label'] as String, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600), textAlign: TextAlign.center),

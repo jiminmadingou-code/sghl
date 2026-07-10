@@ -158,8 +158,91 @@ class _ConvTile extends StatelessWidget {
             ]),
           ])),
         ]),
+        _ReplyBar(conv: conv),
       ),
     );
+  }
+}
+
+class _ReplyBar extends StatefulWidget {
+  final Map<String, dynamic> conv;
+  const _ReplyBar({required this.conv});
+  @override
+  State<_ReplyBar> createState() => _ReplyBarState();
+}
+
+class _ReplyBarState extends State<_ReplyBar> {
+  final _ctrl = TextEditingController();
+  bool _open = false;
+
+  void _send() {
+    if (_ctrl.text.trim().isEmpty) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Message envoyé à ${widget.conv['medecin']}'),
+      backgroundColor: const Color(0xFF6366F1),
+      behavior: SnackBarBehavior.floating,
+    ));
+    _ctrl.clear();
+    setState(() => _open = false);
+  }
+
+  @override
+  void dispose() { _ctrl.dispose(); super.dispose(); }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      GestureDetector(
+        onTap: () => setState(() => _open = !_open),
+        child: Container(
+          margin: const EdgeInsets.only(top: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+          ),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            const Icon(Icons.reply_rounded, color: Color(0xFF818CF8), size: 15),
+            const SizedBox(width: 6),
+            Text(_open ? 'Annuler' : 'Répondre', style: const TextStyle(color: Color(0xFF818CF8), fontSize: 12, fontWeight: FontWeight.w600)),
+          ]),
+        ),
+      ),
+      if (_open) Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Row(children: [
+          Expanded(
+            child: TextField(
+              controller: _ctrl,
+              autofocus: true,
+              style: const TextStyle(color: Colors.white, fontSize: 13),
+              decoration: InputDecoration(
+                hintText: 'Votre message...',
+                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 13),
+                filled: true,
+                fillColor: Colors.white.withValues(alpha: 0.07),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              ),
+              onSubmitted: (_) => _send(),
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: _send,
+            child: Container(
+              width: 40, height: 40,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.send_rounded, color: Colors.white, size: 18),
+            ),
+          ),
+        ]),
+      ),
+    ]);
   }
 }
 
