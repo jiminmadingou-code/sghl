@@ -116,7 +116,8 @@ class _ConvTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: nonLus > 0 ? const Color(0xFF6366F1).withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.06)),
         ),
-        child: Row(children: [
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
           Stack(children: [
             Container(
               width: 52, height: 52,
@@ -158,7 +159,8 @@ class _ConvTile extends StatelessWidget {
             ]),
           ])),
         ]),
-        _ReplyBar(conv: conv),
+          _ReplyBar(conv: conv),
+        ]),
       ),
     );
   }
