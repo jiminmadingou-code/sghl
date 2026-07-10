@@ -90,11 +90,15 @@ TEMPLATES = [{
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# Railway injecte DATABASE_URL automatiquement — on le parse en priorité
-_database_url = config('DATABASE_URL', default='')
-if _database_url:
-    import dj_database_url
-    DATABASES = {'default': dj_database_url.parse(_database_url, conn_max_age=600)}
+# Base de données — priorité : DATABASE_PUBLIC_URL > DATABASE_URL > variables DB_*
+import dj_database_url as _dj_db
+_db_url = (
+    config('DATABASE_PUBLIC_URL', default='') or
+    config('DATABASE_URL', default='') or
+    ''
+)
+if _db_url:
+    DATABASES = {'default': _dj_db.parse(_db_url, conn_max_age=600, ssl_require=False)}
 else:
     DATABASES = {
         'default': {
