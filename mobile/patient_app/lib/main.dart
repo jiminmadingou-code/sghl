@@ -113,11 +113,11 @@ class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
 
   final _tabs = [
-    (path: '/home',          icon: Icons.home_outlined,          activeIcon: Icons.home,             label: 'Accueil'),
-    (path: '/appointments',  icon: Icons.calendar_today_outlined, activeIcon: Icons.calendar_today,  label: 'RDV'),
-    (path: '/results',       icon: Icons.science_outlined,        activeIcon: Icons.science,          label: 'Résultats'),
-    (path: '/prescriptions', icon: Icons.medication_outlined,     activeIcon: Icons.medication,       label: 'Ordonnances'),
-    (path: '/chat',          icon: Icons.chat_bubble_outline,     activeIcon: Icons.chat_bubble,      label: 'Messages'),
+    (path: '/home',          icon: Icons.home_outlined,           activeIcon: Icons.home_rounded,            label: 'Accueil'),
+    (path: '/appointments',  icon: Icons.calendar_today_outlined,  activeIcon: Icons.calendar_today_rounded,  label: 'RDV'),
+    (path: '/results',       icon: Icons.science_outlined,         activeIcon: Icons.science_rounded,         label: 'Résultats'),
+    (path: '/prescriptions', icon: Icons.medication_outlined,      activeIcon: Icons.medication_rounded,      label: 'Ordonnances'),
+    (path: '/chat',          icon: Icons.chat_bubble_outline,      activeIcon: Icons.chat_bubble_rounded,     label: 'Messages'),
   ];
 
   @override
@@ -125,28 +125,57 @@ class _MainShellState extends State<MainShell> {
     super.didChangeDependencies();
     final currentPath = GoRouterState.of(context).matchedLocation;
     final index = _tabs.indexWhere((t) => currentPath == t.path || currentPath.startsWith(t.path));
-    if (index != -1 && index != _currentIndex) {
-      setState(() => _currentIndex = index);
-    }
+    if (index != -1 && index != _currentIndex) setState(() => _currentIndex = index);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: widget.child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (i) {
-          setState(() => _currentIndex = i);
-          context.go(_tabs[i].path);
-        },
-        backgroundColor: Colors.white,
-        elevation: 8,
-        destinations: _tabs.map((t) => NavigationDestination(
-          icon: Icon(t.icon),
-          selectedIcon: Icon(t.activeIcon, color: const Color(0xFF6366F1)),
-          label: t.label,
-        )).toList(),
+      extendBody: true,
+      bottomNavigationBar: Container(
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1740),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          boxShadow: [
+            BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.2), blurRadius: 24, offset: const Offset(0, 8)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 16, offset: const Offset(0, 4)),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: _tabs.asMap().entries.map((e) {
+              final i = e.key;
+              final t = e.value;
+              final selected = _currentIndex == i;
+              return GestureDetector(
+                onTap: () { setState(() => _currentIndex = i); context.go(t.path); },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOut,
+                  padding: EdgeInsets.symmetric(horizontal: selected ? 16 : 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: selected ? const Color(0xFF6366F1).withValues(alpha: 0.2) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(16),
+                    border: selected ? Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.4)) : null,
+                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(selected ? t.activeIcon : t.icon,
+                        color: selected ? const Color(0xFF818CF8) : Colors.white38, size: 22),
+                    if (selected) ...[
+                      const SizedBox(width: 6),
+                      Text(t.label, style: const TextStyle(color: Color(0xFF818CF8), fontSize: 12, fontWeight: FontWeight.w700)),
+                    ],
+                  ]),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
       ),
     );
   }

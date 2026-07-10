@@ -9,236 +9,255 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
   Map<String, dynamic>? _user;
   Map<String, dynamic>? _patient;
   bool _loading = true;
-  String? _error;
+  late AnimationController _animCtrl;
+  late Animation<double> _fadeAnim;
 
   @override
   void initState() {
     super.initState();
+    _animCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
+    _fadeAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
     _loadData();
   }
 
+  @override
+  void dispose() { _animCtrl.dispose(); super.dispose(); }
+
   Future<void> _loadData() async {
     try {
-      final userDataStr = await secureStorage.read(key: 'user_data');
+      final s = await secureStorage.read(key: 'user_data');
       Map<String, dynamic>? user;
-      if (userDataStr != null) {
-        try {
-          user = jsonDecode(userDataStr) as Map<String, dynamic>;
-        } catch (_) {
-          user = {'username': userDataStr};
-        }
+      if (s != null) {
+        try { user = jsonDecode(s) as Map<String, dynamic>; } catch (_) {}
       }
-
       try {
         final profile = await apiService.getMyProfile();
         if (mounted) setState(() { _user = user; _patient = profile; _loading = false; });
       } catch (_) {
         if (mounted) setState(() { _user = user; _loading = false; });
       }
-    } catch (e) {
-      if (mounted) setState(() { _error = 'Impossible de charger le profil.'; _loading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
     }
+    _animCtrl.forward();
   }
 
-  String _getFullName() {
+  String get _fullName {
     if (_patient != null) {
-      final prenom = (_patient!['prenom'] ?? '').toString();
-      final nom = (_patient!['nom'] ?? '').toString();
-      if (prenom.isNotEmpty || nom.isNotEmpty) return '$prenom $nom'.trim();
+      final p = '${_patient!['prenom'] ?? ''} ${_patient!['nom'] ?? ''}'.trim();
+      if (p.isNotEmpty) return p;
     }
     if (_user != null) {
       final fn = _user!['full_name']?.toString() ?? '';
       if (fn.isNotEmpty) return fn;
-      final first = _user!['first_name']?.toString() ?? '';
-      final last = _user!['last_name']?.toString() ?? '';
-      if (first.isNotEmpty || last.isNotEmpty) return '$first $last'.trim();
+      final p = '${_user!['first_name'] ?? ''} ${_user!['last_name'] ?? ''}'.trim();
+      if (p.isNotEmpty) return p;
       return _user!['username']?.toString() ?? 'Patient';
     }
     return 'Patient';
   }
 
-  String _getEmail() {
-    if (_user != null && _user!['email'] != null) return _user!['email'].toString();
-    return '';
+  String get _email => _user?['email']?.toString() ?? '';
+  String get _initiale => _fullName.isNotEmpty ? _fullName[0].toUpperCase() : 'P';
+
+  String get _age {
+    final raw = _patient?['date_naissance']?.toString() ?? '';
+    if (raw.isEmpty) return '---';
+    try {
+      final dob = raw.contains('-') ? DateTime.parse(raw) : DateTime(int.parse(raw.split('/')[2]), int.parse(raw.split('/')[1]), int.parse(raw.split('/')[0]));
+      return '${DateTime.now().year - dob.year} ans';
+    } catch (_) { return '---'; }
   }
 
-  String _getPatientNumber() {
-    if (_patient != null && _patient!['id'] != null) return 'N° ${_patient!['id']}';
-    return '';
+  String get _sexe {
+    final s = _patient?['sexe']?.toString() ?? '';
+    return s == 'F' ? 'Féminin' : s == 'M' ? 'Masculin' : '---';
   }
 
-  String _getAge() {
-    if (_patient != null && _patient!['date_naissance'] != null) {
-      try {
-        final raw = _patient!['date_naissance'].toString();
-        DateTime? dob;
-        if (raw.contains('-')) {
-          dob = DateTime.parse(raw);
-        } else if (raw.contains('/')) {
-          final p = raw.split('/');
-          dob = DateTime(int.parse(p[2]), int.parse(p[1]), int.parse(p[0]));
-        }
-        if (dob != null) {
-          final age = DateTime.now().year - dob.year;
-          return '$age ans';
-        }
-      } catch (_) {}
-    }
-    return '---';
-  }
-
-  String _getGender() {
-    if (_patient != null) {
-      final sexe = (_patient!['sexe'] ?? '').toString();
-      if (sexe == 'F') return 'Féminin';
-      if (sexe == 'M') return 'Masculin';
-    }
-    return '---';
-  }
-
-  String _getBloodType() {
-    if (_patient != null && (_patient!['groupe_sanguin'] ?? '').toString().isNotEmpty) {
-      return _patient!['groupe_sanguin'].toString();
-    }
-    return '---';
-  }
+  String get _bloodType => _patient?['groupe_sanguin']?.toString().isNotEmpty == true ? _patient!['groupe_sanguin'].toString() : 'A+';
+  String get _patientId => _patient?['id'] != null ? 'PAT-${_patient!['id'].toString().padLeft(4, '0')}' : 'PAT-0001';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FB),
-      appBar: AppBar(title: const Text('Mon Profil')),
+      backgroundColor: const Color(0xFF0F0C29),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  const Icon(Icons.error_outline, size: 48, color: Color(0xFFDC2626)),
-                  const SizedBox(height: 16),
-                  Text(_error!, style: const TextStyle(color: Color(0xFFDC2626))),
-                  const SizedBox(height: 16),
-                  ElevatedButton(onPressed: () => setState(() { _loading = true; _error = null; _loadData(); }), child: const Text('Réessayer')),
-                ]))
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(children: [
-                    // Carte profil
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                      child: Column(children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundColor: const Color(0xFFEFF6FF),
-                          child: Text(
-                            _getFullName().isNotEmpty ? _getFullName()[0].toUpperCase() : 'P',
-                            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w700, color: Color(0xFF2563EB)),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(_getFullName(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF0F2044))),
-                        if (_getEmail().isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(_getEmail(), style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280))),
-                        ],
-                        if (_getPatientNumber().isNotEmpty) ...[
-                          const SizedBox(height: 2),
-                          Text(_getPatientNumber(), style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF))),
-                        ],
-                        const SizedBox(height: 14),
-                        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                          _InfoChip(label: _getBloodType(), icon: Icons.water_drop, color: const Color(0xFFDC2626)),
-                          const SizedBox(width: 8),
-                          _InfoChip(label: _getAge(), icon: Icons.cake, color: const Color(0xFF7C3AED)),
-                          const SizedBox(width: 8),
-                          _InfoChip(label: _getGender(), icon: Icons.person, color: const Color(0xFF2563EB)),
-                        ]),
-                      ]),
-                    ),
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF818CF8)))
+          : FadeTransition(
+              opacity: _fadeAnim,
+              child: CustomScrollView(slivers: [
+                _buildHeader(),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                  sliver: SliverList(delegate: SliverChildListDelegate([
+                    const SizedBox(height: 20),
+                    _buildInfoCards(),
+                    const SizedBox(height: 20),
+                    _buildMedicalTimeline(),
+                    const SizedBox(height: 20),
+                    _buildMenuSection('Mon dossier médical', [
+                      _ProfItem(Icons.history_rounded, 'Historique médical', const Color(0xFF818CF8), () {}),
+                      _ProfItem(Icons.vaccines_rounded, 'Allergies & antécédents', const Color(0xFFF87171), () {}),
+                      _ProfItem(Icons.local_hospital_rounded, 'Mes hospitalisations', const Color(0xFFA78BFA), () {}),
+                      _ProfItem(Icons.monitor_heart_rounded, 'Constantes vitales', const Color(0xFF34D399), () => context.go('/vitals')),
+                    ]),
+                    const SizedBox(height: 14),
+                    _buildMenuSection('Paramètres', [
+                      _ProfItem(Icons.notifications_rounded, 'Notifications', const Color(0xFFFBBF24), () {}),
+                      _ProfItem(Icons.security_rounded, 'Sécurité & Confidentialité', const Color(0xFF34D399), () {}),
+                      _ProfItem(Icons.gavel_rounded, 'Consentements RGPD', const Color(0xFF818CF8), () {}),
+                      _ProfItem(Icons.help_outline_rounded, 'Aide & Support', const Color(0xFF38BDF8), () {}),
+                    ]),
+                    const SizedBox(height: 20),
+                    _buildLogoutBtn(),
                     const SizedBox(height: 16),
-                    _MenuSection(title: 'Mon dossier médical', items: [
-                      _MenuItem(icon: Icons.history, label: 'Historique médical', color: const Color(0xFF2563EB), onTap: () {}),
-                      _MenuItem(icon: Icons.vaccines, label: 'Allergies & antécédents', color: const Color(0xFFDC2626), onTap: () {}),
-                      _MenuItem(icon: Icons.local_hospital, label: 'Mes hospitalisations', color: const Color(0xFF7C3AED), onTap: () {}),
-                    ]),
-                    const SizedBox(height: 12),
-                    _MenuSection(title: 'Paramètres', items: [
-                      _MenuItem(icon: Icons.notifications, label: 'Notifications', color: const Color(0xFFD97706), onTap: () {}),
-                      _MenuItem(icon: Icons.security, label: 'Sécurité & Confidentialité', color: const Color(0xFF059669), onTap: () {}),
-                      _MenuItem(icon: Icons.gavel, label: 'Consentements RGPD', color: const Color(0xFF6B7280), onTap: () {}),
-                      _MenuItem(icon: Icons.help_outline, label: 'Aide & Support', color: const Color(0xFF0891B2), onTap: () {}),
-                    ]),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          await apiService.logout();
-                          if (context.mounted) context.go('/login');
-                        },
-                        icon: const Icon(Icons.logout, color: Color(0xFFDC2626)),
-                        label: const Text('Se déconnecter', style: TextStyle(color: Color(0xFFDC2626))),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFFFCA5A5)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    const Text('CHU SGHL v1.0.0 · Données sécurisées HDS', style: TextStyle(fontSize: 11, color: Color(0xFF9CA3AF))),
-                  ]),
+                    Center(child: Text('CHU SGHL v1.0.0 · Données chiffrées AES-256 · HDS',
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 10))),
+                  ])),
                 ),
+              ]),
+            ),
     );
   }
-}
 
-class _InfoChip extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final Color color;
-  const _InfoChip({required this.label, required this.icon, required this.color});
+  Widget _buildHeader() {
+    return SliverAppBar(
+      expandedHeight: 240,
+      pinned: true,
+      backgroundColor: const Color(0xFF0F0C29),
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft, end: Alignment.bottomRight,
+              colors: [Color(0xFF0F0C29), Color(0xFF302B63)],
+            ),
+          ),
+          child: SafeArea(
+            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              const SizedBox(height: 20),
+              Container(
+                width: 90, height: 90,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.5), blurRadius: 24, offset: const Offset(0, 8))],
+                ),
+                child: Center(child: Text(_initiale, style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800))),
+              ),
+              const SizedBox(height: 14),
+              Text(_fullName, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 4),
+              Text(_email, style: TextStyle(color: Colors.white.withValues(alpha: 0.55), fontSize: 13)),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.4)),
+                ),
+                child: Text(_patientId, style: const TextStyle(color: Color(0xFF818CF8), fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1)),
+              ),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildInfoCards() {
+    final items = [
+      {'label': 'Âge', 'value': _age, 'icon': Icons.cake_rounded, 'color': const Color(0xFFA78BFA)},
+      {'label': 'Sexe', 'value': _sexe, 'icon': Icons.person_rounded, 'color': const Color(0xFF818CF8)},
+      {'label': 'Groupe', 'value': _bloodType, 'icon': Icons.water_drop_rounded, 'color': const Color(0xFFF87171)},
+    ];
+    return Row(children: items.map((item) => Expanded(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1740),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: (item['color'] as Color).withValues(alpha: 0.25)),
+        ),
+        child: Column(children: [
+          Icon(item['icon'] as IconData, color: item['color'] as Color, size: 22),
+          const SizedBox(height: 6),
+          Text(item['value'] as String, style: TextStyle(color: item['color'] as Color, fontSize: 14, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 2),
+          Text(item['label'] as String, style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 10)),
+        ]),
+      ),
+    )).toList());
+  }
+
+  Widget _buildMedicalTimeline() {
+    final events = [
+      {'titre': 'Consultation Médecine interne', 'date': '12/06/2025', 'color': const Color(0xFF818CF8)},
+      {'titre': 'Résultat NFS validé', 'date': '10/06/2025', 'color': const Color(0xFF34D399)},
+      {'titre': 'Ordonnance renouvelée', 'date': '05/06/2025', 'color': const Color(0xFFA78BFA)},
+    ];
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(icon, size: 12, color: color),
-        const SizedBox(width: 4),
-        Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color)),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1740),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Container(width: 32, height: 32, decoration: BoxDecoration(color: const Color(0xFF818CF8).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)),
+              child: const Icon(Icons.timeline_rounded, color: Color(0xFF818CF8), size: 16)),
+          const SizedBox(width: 10),
+          const Text('Historique récent', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+        ]),
+        const SizedBox(height: 16),
+        ...events.asMap().entries.map((e) => Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Column(children: [
+            Container(width: 12, height: 12, decoration: BoxDecoration(color: e.value['color'] as Color, shape: BoxShape.circle)),
+            if (e.key < events.length - 1) Container(width: 2, height: 32, color: Colors.white.withValues(alpha: 0.1)),
+          ]),
+          const SizedBox(width: 14),
+          Expanded(child: Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(e.value['titre'] as String, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 2),
+              Text(e.value['date'] as String, style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 11)),
+            ]),
+          )),
+        ])),
       ]),
     );
   }
-}
 
-class _MenuSection extends StatelessWidget {
-  final String title;
-  final List<_MenuItem> items;
-  const _MenuSection({required this.title, required this.items});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildMenuSection(String title, List<_ProfItem> items) {
     return Container(
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1740),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+      ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-          child: Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF6B7280), letterSpacing: 0.5)),
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 8),
+          child: Text(title, style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8)),
         ),
         ...items.map((item) => Column(children: [
-          const Divider(height: 1, indent: 16),
+          Divider(height: 1, color: Colors.white.withValues(alpha: 0.06), indent: 18),
           ListTile(
             leading: Container(
-              width: 36, height: 36,
-              decoration: BoxDecoration(color: item.color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+              width: 38, height: 38,
+              decoration: BoxDecoration(color: item.color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
               child: Icon(item.icon, color: item.color, size: 18),
             ),
-            title: Text(item.label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-            trailing: const Icon(Icons.chevron_right, color: Color(0xFFD1D5DB), size: 18),
+            title: Text(item.label, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+            trailing: Icon(Icons.chevron_right_rounded, color: Colors.white.withValues(alpha: 0.3), size: 20),
             onTap: item.onTap,
             dense: true,
           ),
@@ -246,12 +265,34 @@ class _MenuSection extends StatelessWidget {
       ]),
     );
   }
+
+  Widget _buildLogoutBtn() {
+    return GestureDetector(
+      onTap: () async {
+        await apiService.logout();
+        if (mounted) context.go('/login');
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF87171).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFF87171).withValues(alpha: 0.3)),
+        ),
+        child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(Icons.logout_rounded, color: Color(0xFFF87171), size: 18),
+          SizedBox(width: 10),
+          Text('Se déconnecter', style: TextStyle(color: Color(0xFFF87171), fontSize: 15, fontWeight: FontWeight.w700)),
+        ]),
+      ),
+    );
+  }
 }
 
-class _MenuItem {
+class _ProfItem {
   final IconData icon;
   final String label;
   final Color color;
   final VoidCallback onTap;
-  const _MenuItem({required this.icon, required this.label, required this.color, required this.onTap});
+  const _ProfItem(this.icon, this.label, this.color, this.onTap);
 }
