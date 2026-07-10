@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../services/api_service.dart';
@@ -11,6 +12,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   Map<String, dynamic>? _summary;
   bool _loading = true;
+  String _prenom = '';
 
   @override
   void initState() {
@@ -19,6 +21,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _load() async {
+    // Charger le prénom depuis le stockage
+    try {
+      final userDataStr = await secureStorage.read(key: 'user_data');
+      if (userDataStr != null) {
+        try {
+          final user = jsonDecode(userDataStr) as Map<String, dynamic>;
+          final fn = user['first_name']?.toString() ?? '';
+          final fullName = user['full_name']?.toString() ?? '';
+          if (mounted) setState(() => _prenom = fn.isNotEmpty ? fn : fullName.split(' ').first);
+        } catch (_) {}
+      }
+    } catch (_) {}
+
     try {
       final data = await apiService.getDashboardSummary();
       if (mounted) setState(() { _summary = data; _loading = false; });
@@ -64,7 +79,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text('Bonjour,', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                                const Text('Mon Espace Santé', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                                Text(
+                                  _prenom.isNotEmpty ? _prenom : 'Mon Espace Santé',
+                                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+                                ),
                               ],
                             ),
                             const Spacer(),

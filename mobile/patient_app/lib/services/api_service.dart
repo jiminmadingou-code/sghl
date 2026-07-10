@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -115,7 +116,7 @@ class ApiService {
     await secureStorage.write(key: 'access_token', value: response.data['access']);
     await secureStorage.write(key: 'refresh_token', value: response.data['refresh']);
     if (response.data['user'] != null) {
-      await secureStorage.write(key: 'user_data', value: response.data['user'].toString());
+      await secureStorage.write(key: 'user_data', value: jsonEncode(response.data['user']));
     }
     return response.data;
   }

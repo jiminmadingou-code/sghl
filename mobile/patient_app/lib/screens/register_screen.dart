@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
@@ -64,6 +65,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
         final data = response.data;
         if (data['access'] != null) await secureStorage.write(key: 'access_token', value: data['access']);
         if (data['refresh'] != null) await secureStorage.write(key: 'refresh_token', value: data['refresh']);
+        if (data['user'] != null) await secureStorage.write(key: 'user_data', value: jsonEncode(data['user']));
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
