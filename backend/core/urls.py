@@ -91,7 +91,6 @@ def patient_register_view(request):
     """Inscription d'un nouveau patient avec création du compte Django + dossier patient."""
     try:
         data = json.loads(request.body)
-        username = data.get('username', '').strip()
         password = data.get('password', '')
         confirm_password = data.get('confirm_password', '')
         email = data.get('email', '').strip().lower()
@@ -101,15 +100,21 @@ def patient_register_view(request):
         sexe = data.get('sexe', 'M')
         telephone = data.get('telephone', '').strip()
 
+        # Générer username unique depuis email
+        base_username = email.split('@')[0]
+        username = base_username
+        counter = 1
+        while User.objects.filter(username=username).exists():
+            username = f'{base_username}{counter}'
+            counter += 1
+
         # Validation
-        if not username or not password or not email or not prenom or not nom:
+        if not password or not email or not prenom or not nom:
             return JsonResponse({'error': 'Tous les champs obligatoires doivent être remplis.'}, status=400)
         if password != confirm_password:
             return JsonResponse({'error': 'Les mots de passe ne correspondent pas.'}, status=400)
         if len(password) < 6:
             return JsonResponse({'error': 'Le mot de passe doit contenir au moins 6 caractères.'}, status=400)
-        if User.objects.filter(username=username).exists():
-            return JsonResponse({'error': 'Ce numéro d\'identification est déjà utilisé.'}, status=409)
         if User.objects.filter(email=email).exists():
             return JsonResponse({'error': 'Cet email est déjà utilisé.'}, status=409)
 

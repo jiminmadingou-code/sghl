@@ -1,6 +1,6 @@
 class AppConfig {
   // ── PRODUCTION (remplace par ton URL Railway après déploiement) ──
-  static const String apiBaseUrl = 'https://TON-BACKEND.railway.app/api/v1';
+  static const String apiBaseUrl = 'https://sghl-production.up.railway.app/api/v1';
 
   // ── DEV LOCAL ──
   // Android emulator  : 'http://10.0.2.2:8000/api/v1'

@@ -13,6 +13,7 @@ import 'screens/invoices_screen.dart';
 import 'screens/chat_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/vitals_screen.dart';
+import 'screens/register_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +30,7 @@ final _router = GoRouter(
   routes: [
     GoRoute(path: '/splash',        builder: (_, __) => const SplashScreen()),
     GoRoute(path: '/login',         builder: (_, __) => const LoginScreen()),
+    GoRoute(path: '/register',      builder: (_, __) => const RegisterScreen()),
     ShellRoute(
       builder: (context, state, child) => MainShell(child: child),
       routes: [
@@ -75,7 +77,7 @@ class SGHLPatientApp extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           ),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 2,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           color: Colors.white,
@@ -112,6 +114,17 @@ class _MainShellState extends State<MainShell> {
     (path: '/prescriptions', icon: Icons.medication_outlined,    activeIcon: Icons.medication,        label: 'Ordonnances'),
     (path: '/chat',          icon: Icons.chat_bubble_outline,    activeIcon: Icons.chat_bubble,       label: 'Messages'),
   ];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Synchroniser l'index avec la route actuelle
+    final currentPath = GoRouterState.of(context).matchedLocation;
+    final index = _tabs.indexWhere((t) => currentPath == t.path || currentPath.startsWith(t.path));
+    if (index != -1 && index != _currentIndex) {
+      setState(() => _currentIndex = index);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

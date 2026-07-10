@@ -45,8 +45,10 @@ for username, first, last, role, service, pwd in staff:
 print(f"✅ {len(staff)} membres du personnel créés")
 
 # ── Patients ─────────────────────────────────────────────────────
+# Suppression de Mamadou Diallo s'il existe (donnée de démo obsolète)
+Patient.objects.filter(nom='Diallo', prenom='Mamadou', user__isnull=True).delete()
+
 patients_data = [
-    ('Mamadou', 'Diallo',   date(1979, 3, 15),  'M', '620000001', 'A+'),
     ('Fatoumata','Koné',    date(1992, 7, 22),  'F', '621000002', 'O+'),
     ('Ibrahim', 'Traoré',   date(1957, 11, 8),  'M', '622000003', 'B-'),
     ('Aissatou','Bah',      date(1996, 1, 30),  'F', '623000004', 'AB+'),

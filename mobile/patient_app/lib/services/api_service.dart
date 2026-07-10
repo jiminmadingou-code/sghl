@@ -1,9 +1,65 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// Stockage sécurisé qui fonctionne aussi bien sur mobile que web
+class SecureStorage {
+  static FlutterSecureStorage? _secure;
+  static SharedPreferences? _prefs;
+
+  static FlutterSecureStorage get _storage =>
+      _secure ??= const FlutterSecureStorage();
+
+  static Future<void> _initPrefs() async {
+    if (_prefs == null) {
+      _prefs = await SharedPreferences.getInstance();
+    }
+  }
+
+  /// Lecture : web utilise SharedPreferences, mobile utilise flutter_secure_storage
+  Future<String?> read({required String key}) async {
+    if (kIsWeb) {
+      await _initPrefs();
+      return _prefs?.getString(key);
+    }
+    return _storage.read(key: key);
+  }
+
+  /// Écriture
+  Future<void> write({required String key, required String value}) async {
+    if (kIsWeb) {
+      await _initPrefs();
+      await _prefs?.setString(key, value);
+    } else {
+      await _storage.write(key: key, value: value);
+    }
+  }
+
+  /// Suppression
+  Future<void> delete({required String key}) async {
+    if (kIsWeb) {
+      await _initPrefs();
+      await _prefs?.remove(key);
+    } else {
+      await _storage.delete(key: key);
+    }
+  }
+
+  /// Supprimer tout
+  Future<void> deleteAll() async {
+    if (kIsWeb) {
+      await _initPrefs();
+      final keys = _prefs?.getKeys() ?? {};
+      for (final k in keys) await _prefs?.remove(k);
+    } else {
+      await _storage.deleteAll();
+    }
+  }
+}
 
 class ApiService {
-  static const String _baseUrl = 'http://10.0.2.2:8000/api/v1'; // Android emulator
-  static const _storage = FlutterSecureStorage();
+  static const String _baseUrl = 'https://sghl-production.up.railway.app/api/v1';
 
   late final Dio _dio;
 
@@ -17,7 +73,7 @@ class ApiService {
 
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
-        final token = await _storage.read(key: 'access_token');
+        final token = await secureStorage.read(key: 'access_token');
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
         }
@@ -27,7 +83,7 @@ class ApiService {
         if (error.response?.statusCode == 401) {
           final refreshed = await _refreshToken();
           if (refreshed) {
-            final token = await _storage.read(key: 'access_token');
+            final token = await secureStorage.read(key: 'access_token');
             error.requestOptions.headers['Authorization'] = 'Bearer $token';
             final response = await _dio.fetch(error.requestOptions);
             return handler.resolve(response);
@@ -40,10 +96,10 @@ class ApiService {
 
   Future<bool> _refreshToken() async {
     try {
-      final refresh = await _storage.read(key: 'refresh_token');
+      final refresh = await secureStorage.read(key: 'refresh_token');
       if (refresh == null) return false;
       final response = await _dio.post('/auth/refresh/', data: {'refresh': refresh});
-      await _storage.write(key: 'access_token', value: response.data['access']);
+      await secureStorage.write(key: 'access_token', value: response.data['access']);
       return true;
     } catch (_) {
       await logout();
@@ -51,25 +107,25 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> login(String username, String password) async {
+  Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await _dio.post('/auth/login/', data: {
-      'username': username,
+      'username': email, // backend accepte email ou username
       'password': password,
     });
-    await _storage.write(key: 'access_token',  value: response.data['access']);
-    await _storage.write(key: 'refresh_token', value: response.data['refresh']);
+    await secureStorage.write(key: 'access_token', value: response.data['access']);
+    await secureStorage.write(key: 'refresh_token', value: response.data['refresh']);
     if (response.data['user'] != null) {
-      await _storage.write(key: 'user_data', value: response.data['user'].toString());
+      await secureStorage.write(key: 'user_data', value: response.data['user'].toString());
     }
     return response.data;
   }
 
   Future<void> logout() async {
-    await _storage.deleteAll();
+    await secureStorage.deleteAll();
   }
 
   Future<bool> isLoggedIn() async {
-    final token = await _storage.read(key: 'access_token');
+    final token = await secureStorage.read(key: 'access_token');
     return token != null;
   }
 
@@ -167,3 +223,4 @@ class ApiService {
 }
 
 final apiService = ApiService();
+final secureStorage = SecureStorage();
