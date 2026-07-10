@@ -166,7 +166,7 @@ class _RdvCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Center(child: Text(
-                (rdv['medecin'] ?? 'Dr').split(' ').where((w) => w.isNotEmpty).map((w) => w[0]).take(2).join(),
+                (() { final parts = (rdv['medecin'] as String? ?? 'Dr').split(' ').where((w) => w.isNotEmpty).toList(); return parts.length >= 2 ? '${parts[0][0]}${parts[1][0]}' : parts.isNotEmpty ? parts[0][0] : 'Dr'; })(),
                 style: TextStyle(color: _statutColor, fontSize: 18, fontWeight: FontWeight.w800),
               )),
             ),

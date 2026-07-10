@@ -259,12 +259,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _buildQuickActions() {
     final actions = [
-      {'icon': Icons.calendar_today, 'label': 'Rendez-vous', 'color': const Color(0xFF818CF8), 'path': '/appointments'},
-      {'icon': Icons.science, 'label': 'Résultats', 'color': const Color(0xFFA78BFA), 'path': '/results'},
-      {'icon': Icons.medication, 'label': 'Ordonnances', 'color': const Color(0xFF34D399), 'path': '/prescriptions'},
-      {'icon': Icons.receipt_long, 'label': 'Factures', 'color': const Color(0xFFFBBF24), 'path': '/invoices'},
-      {'icon': Icons.chat_bubble, 'label': 'Messages', 'color': const Color(0xFF38BDF8), 'path': '/chat'},
-      {'icon': Icons.monitor_heart, 'label': 'Constantes', 'color': const Color(0xFFF87171), 'path': '/vitals'},
+      {'icon': Icons.calendar_today_rounded, 'label': 'Rendez-vous', 'color': const Color(0xFF818CF8), 'path': '/appointments',
+       'image': '🗓️', 'bg': const Color(0xFF3730A3)},
+      {'icon': Icons.science_rounded, 'label': 'Résultats', 'color': const Color(0xFFA78BFA), 'path': '/results',
+       'image': '🔬', 'bg': const Color(0xFF5B21B6)},
+      {'icon': Icons.medication_rounded, 'label': 'Ordonnances', 'color': const Color(0xFF34D399), 'path': '/prescriptions',
+       'image': '💊', 'bg': const Color(0xFF065F46)},
+      {'icon': Icons.receipt_long_rounded, 'label': 'Factures', 'color': const Color(0xFFFBBF24), 'path': '/invoices',
+       'image': '🧾', 'bg': const Color(0xFF92400E)},
+      {'icon': Icons.chat_bubble_rounded, 'label': 'Messages', 'color': const Color(0xFF38BDF8), 'path': '/chat',
+       'image': '💬', 'bg': const Color(0xFF0C4A6E)},
+      {'icon': Icons.monitor_heart_rounded, 'label': 'Constantes', 'color': const Color(0xFFF87171), 'path': '/vitals',
+       'image': '❤️', 'bg': const Color(0xFF7F1D1D)},
     ];
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       _sectionTitle('Accès rapides', Icons.grid_view_rounded),
@@ -272,25 +278,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       GridView.count(
         crossAxisCount: 3, shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        crossAxisSpacing: 10, mainAxisSpacing: 10, childAspectRatio: 1.0,
+        crossAxisSpacing: 10, mainAxisSpacing: 10, childAspectRatio: 0.95,
         children: actions.map((a) => GestureDetector(
           onTap: () => context.go(a['path'] as String),
           child: Container(
             decoration: BoxDecoration(
               color: const Color(0xFF1A1740),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(color: (a['color'] as Color).withValues(alpha: 0.25)),
+              boxShadow: [BoxShadow(color: (a['color'] as Color).withValues(alpha: 0.1), blurRadius: 12, offset: const Offset(0, 4))],
             ),
             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Container(
-                width: 46, height: 46,
+                width: 52, height: 52,
                 decoration: BoxDecoration(
-                  color: (a['color'] as Color).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(14),
+                  color: (a['bg'] as Color).withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: (a['color'] as Color).withValues(alpha: 0.3)),
                 ),
-                child: Icon(a['icon'] as IconData, color: a['color'] as Color, size: 24),
+                child: Center(child: Text(a['image'] as String, style: const TextStyle(fontSize: 24))),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 9),
               Text(a['label'] as String, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600), textAlign: TextAlign.center),
             ]),
           ),

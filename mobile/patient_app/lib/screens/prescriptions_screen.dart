@@ -148,12 +148,80 @@ class _PrescCardState extends State<_PrescCard> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: GestureDetector(
-              onTap: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: const Text('📄 Téléchargement de l\'ordonnance...'),
-                backgroundColor: const Color(0xFF6366F1),
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              )),
+              onTap: () async {
+                // Simuler génération PDF avec contenu réel
+                final id = widget.prescription['id'];
+                final medecin = widget.prescription['medecin'] ?? 'Médecin';
+                final dt = DateTime.tryParse(widget.prescription['date_prescription'] ?? '') ?? DateTime.now();
+                final lignes = (widget.prescription['lignes'] as List?) ?? [];
+                
+                // Afficher dialog de prévisualisation
+                if (context.mounted) {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => Dialog(
+                      backgroundColor: const Color(0xFF1A1740),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Row(children: [
+                            Container(width: 40, height: 40, decoration: BoxDecoration(color: const Color(0xFF6366F1).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
+                                child: const Icon(Icons.description_rounded, color: Color(0xFF818CF8), size: 20)),
+                            const SizedBox(width: 12),
+                            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text('Ordonnance #$id', style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+                              Text(medecin, style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12)),
+                            ])),
+                            GestureDetector(onTap: () => Navigator.pop(ctx), child: const Icon(Icons.close_rounded, color: Colors.white38, size: 20)),
+                          ]),
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(12)),
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text('CHU SGHL — Ordonnance Médicale', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 11, fontWeight: FontWeight.w700)),
+                              Text('Date: ${dt.day.toString().padLeft(2,'0')}/${dt.month.toString().padLeft(2,'0')}/${dt.year}', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11)),
+                              const SizedBox(height: 10),
+                              ...lignes.map((l) {
+                                final ligne = l as Map<String, dynamic>;
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 6),
+                                  child: Text('• ${ligne['medicament']} — ${ligne['posologie']}', style: const TextStyle(color: Colors.white, fontSize: 12)),
+                                );
+                              }),
+                            ]),
+                          ),
+                          const SizedBox(height: 16),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: const Text('✅ Ordonnance enregistrée dans vos documents'),
+                                backgroundColor: const Color(0xFF34D399),
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ));
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                Icon(Icons.download_rounded, color: Colors.white, size: 16),
+                                SizedBox(width: 8),
+                                Text('Télécharger PDF', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
+                              ]),
+                            ),
+                          ),
+                        ]),
+                      ),
+                    ),
+                  );
+                }
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
