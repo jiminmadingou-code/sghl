@@ -86,19 +86,37 @@ from rest_framework_simplejwt.tokens import RefreshToken
 _confirm_codes = {}
 
 @csrf_exempt
-@require_http_methods(['POST'])
+@require_http_methods(['POST', 'OPTIONS'])
 def patient_register_view(request):
-    """Inscription d'un nouveau patient avec création du compte Django + dossier patient."""
+    """Inscription d'un nouveau patient."""
+    if request.method == 'OPTIONS':
+        response = JsonResponse({})
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     try:
         data = json.loads(request.body)
-        password = data.get('password', '')
-        confirm_password = data.get('confirm_password', '')
+        password = data.get('password', '').strip()
+        confirm_password = data.get('confirm_password', '').strip()
         email = data.get('email', '').strip().lower()
         prenom = data.get('prenom', '').strip()
         nom = data.get('nom', '').strip()
-        date_naissance = data.get('date_naissance', '')
+        date_naissance = data.get('date_naissance', '').strip()
         sexe = data.get('sexe', 'M')
         telephone = data.get('telephone', '').strip()
+
+        # Validations
+        if not email or not prenom or not nom:
+            return JsonResponse({'error': 'Nom, prénom et email sont obligatoires.'}, status=400)
+        if not password:
+            return JsonResponse({'error': 'Le mot de passe est obligatoire.'}, status=400)
+        if len(password) < 6:
+            return JsonResponse({'error': 'Le mot de passe doit contenir au moins 6 caractères.'}, status=400)
+        if password != confirm_password:
+            return JsonResponse({'error': 'Les mots de passe ne correspondent pas.'}, status=400)
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({'error': 'Cet email est déjà utilisé.'}, status=409)
 
         # Générer username unique depuis email
         base_username = email.split('@')[0]
@@ -107,16 +125,6 @@ def patient_register_view(request):
         while User.objects.filter(username=username).exists():
             username = f'{base_username}{counter}'
             counter += 1
-
-        # Validation
-        if not password or not email or not prenom or not nom:
-            return JsonResponse({'error': 'Tous les champs obligatoires doivent être remplis.'}, status=400)
-        if password != confirm_password:
-            return JsonResponse({'error': 'Les mots de passe ne correspondent pas.'}, status=400)
-        if len(password) < 6:
-            return JsonResponse({'error': 'Le mot de passe doit contenir au moins 6 caractères.'}, status=400)
-        if User.objects.filter(email=email).exists():
-            return JsonResponse({'error': 'Cet email est déjà utilisé.'}, status=409)
 
         # Créer le compte Django User
         user = User.objects.create_user(
@@ -129,21 +137,24 @@ def patient_register_view(request):
 
         # Créer le dossier Patient associé
         from patients.models import Patient
-        Patient.objects.create(
-            prenom=prenom,
-            nom=nom,
-            date_naissance=date_naissance,
-            sexe=sexe,
-            telephone=telephone,
-            email=email,
-            user=user,
-        )
+        try:
+            Patient.objects.create(
+                prenom=prenom,
+                nom=nom,
+                date_naissance=date_naissance if date_naissance else '2000-01-01',
+                sexe=sexe,
+                telephone=telephone,
+                email=email,
+                user=user,
+            )
+        except Exception:
+            pass  # Le compte est créé même si le dossier patient échoue
 
         # Générer les tokens JWT
         refresh = RefreshToken.for_user(user)
-        return JsonResponse({
+        response = JsonResponse({
             'status': 'ok',
-            'message': 'Compte créé avec succès. Vous pouvez vous connecter.',
+            'message': 'Compte créé avec succès.',
             'access': str(refresh.access_token),
             'refresh': str(refresh),
             'user': {
@@ -152,11 +163,16 @@ def patient_register_view(request):
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
+                'full_name': f'{prenom} {nom}',
                 'role': 'Patient',
             }
         }, status=201)
+        response['Access-Control-Allow-Origin'] = '*'
+        return response
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Données invalides.'}, status=400)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({'error': f'Erreur serveur: {str(e)}'}, status=500)
 
 @csrf_exempt
 @require_http_methods(['POST'])

@@ -97,10 +97,7 @@ DATABASES = {
 }
 
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 8}},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 6}},
 ]
 
 LANGUAGE_CODE = 'fr-fr'
@@ -129,26 +126,14 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# CORS — autorise le frontend web + le mobile (sans origine fixe)
-_cors_origins = [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-] + [o for o in config('CORS_EXTRA_ORIGINS', default='').split(',') if o]
-
-# Ajouter automatiquement le domaine Railway
-if _railway_host:
-    _cors_origins.append(f'https://{_railway_host}')
-
-if not DEBUG:
-    # Production : autoriser toutes les origines (mobile React Native, etc.)
-    # On utilise Bearer token JWT, pas de cookies → credentials=False
-    CORS_ALLOW_ALL_ORIGINS = True
-    CORS_ALLOW_CREDENTIALS = False
-else:
-    CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL', default=False, cast=bool)
-    CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOWED_ORIGINS = _cors_origins
+# CORS — autorise tout (mobile Flutter, web, Railway)
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = False
+CORS_ALLOW_HEADERS = [
+    'accept', 'accept-encoding', 'authorization',
+    'content-type', 'dnt', 'origin', 'user-agent',
+    'x-csrftoken', 'x-requested-with',
+]
 
 # DRF
 REST_FRAMEWORK = {

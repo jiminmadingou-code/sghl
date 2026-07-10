@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,16 +18,20 @@ import 'screens/register_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.dark,
-  ));
+  if (!kIsWeb) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ));
+  }
   runApp(const ProviderScope(child: SGHLPatientApp()));
 }
 
 final _router = GoRouter(
   initialLocation: '/splash',
+  // Supprime le # dans l'URL sur web
+  routerNeglect: false,
   routes: [
     GoRoute(path: '/splash',        builder: (_, __) => const SplashScreen()),
     GoRoute(path: '/login',         builder: (_, __) => const LoginScreen()),
@@ -59,37 +64,37 @@ class SGHLPatientApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1D4ED8),
+          seedColor: const Color(0xFF6366F1),
           brightness: Brightness.light,
         ),
-        textTheme: GoogleFonts.sourceCodeProTextTheme(),
+        textTheme: GoogleFonts.interTextTheme(),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF1D4ED8),
+          backgroundColor: Color(0xFF6366F1),
           foregroundColor: Colors.white,
           elevation: 0,
           centerTitle: true,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF2563EB),
+            backgroundColor: const Color(0xFF6366F1),
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           ),
         ),
         cardTheme: CardThemeData(
           elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           color: Colors.white,
         ),
         inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
           ),
           filled: true,
-          fillColor: const Color(0xFFF8FAFF),
+          fillColor: const Color(0xFFF8F9FF),
         ),
       ),
     );
@@ -108,17 +113,16 @@ class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
 
   final _tabs = [
-    (path: '/home',          icon: Icons.home_outlined,         activeIcon: Icons.home,              label: 'Accueil'),
-    (path: '/appointments',  icon: Icons.calendar_today_outlined,activeIcon: Icons.calendar_today,   label: 'RDV'),
-    (path: '/results',       icon: Icons.science_outlined,       activeIcon: Icons.science,           label: 'Résultats'),
-    (path: '/prescriptions', icon: Icons.medication_outlined,    activeIcon: Icons.medication,        label: 'Ordonnances'),
-    (path: '/chat',          icon: Icons.chat_bubble_outline,    activeIcon: Icons.chat_bubble,       label: 'Messages'),
+    (path: '/home',          icon: Icons.home_outlined,          activeIcon: Icons.home,             label: 'Accueil'),
+    (path: '/appointments',  icon: Icons.calendar_today_outlined, activeIcon: Icons.calendar_today,  label: 'RDV'),
+    (path: '/results',       icon: Icons.science_outlined,        activeIcon: Icons.science,          label: 'Résultats'),
+    (path: '/prescriptions', icon: Icons.medication_outlined,     activeIcon: Icons.medication,       label: 'Ordonnances'),
+    (path: '/chat',          icon: Icons.chat_bubble_outline,     activeIcon: Icons.chat_bubble,      label: 'Messages'),
   ];
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Synchroniser l'index avec la route actuelle
     final currentPath = GoRouterState.of(context).matchedLocation;
     final index = _tabs.indexWhere((t) => currentPath == t.path || currentPath.startsWith(t.path));
     if (index != -1 && index != _currentIndex) {
@@ -140,7 +144,7 @@ class _MainShellState extends State<MainShell> {
         elevation: 8,
         destinations: _tabs.map((t) => NavigationDestination(
           icon: Icon(t.icon),
-          selectedIcon: Icon(t.activeIcon, color: const Color(0xFF2563EB)),
+          selectedIcon: Icon(t.activeIcon, color: const Color(0xFF6366F1)),
           label: t.label,
         )).toList(),
       ),

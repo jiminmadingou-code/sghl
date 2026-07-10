@@ -25,6 +25,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
     final loggedIn = await apiService.isLoggedIn();
+    if (!mounted) return;
     context.go(loggedIn ? '/home' : '/login');
   }
 
