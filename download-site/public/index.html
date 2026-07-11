@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SGHL Patient — Télécharger l'application</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0F0C29;
+      --card:     #1A1740;
+      --accent:   #6366F1;
+      --violet:   #818CF8;
+      --green:    #34D399;
+      --yellow:   #FBBF24;
+      --red:      #F87171;
+      --border:   rgba(99,102,241,0.2);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: #fff;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Background glow ── */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 40px 20px 80px; }
+
+    /* ── Header ── */
+    header { text-align: center; padding: 48px 0 40px; }
+
+    .logo {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, #6366F1, #8B5CF6);
+      border-radius: 24px;
+      font-size: 36px;
+      box-shadow: 0 16px 40px rgba(99,102,241,0.4);
+      margin-bottom: 20px;
+    }
+
+    header h1 { font-size: 32px; font-weight: 900; letter-spacing: -0.5px; }
+    header h1 span { color: var(--violet); }
+    header p { margin-top: 10px; color: rgba(255,255,255,0.55); font-size: 15px; line-height: 1.6; }
+
+    .badge-row { display: flex; justify-content: center; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      border: 1px solid;
+    }
+    .badge.green  { color: var(--green);  border-color: rgba(52,211,153,0.3);  background: rgba(52,211,153,0.08); }
+    .badge.violet { color: var(--violet); border-color: rgba(129,140,248,0.3); background: rgba(129,140,248,0.08); }
+    .badge.yellow { color: var(--yellow); border-color: rgba(251,191,36,0.3);  background: rgba(251,191,36,0.08); }
+
+    /* ── Download card ── */
+    .dl-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .dl-card h2 { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+    .dl-card .sub { color: rgba(255,255,255,0.45); font-size: 13px; margin-bottom: 24px; }
+
+    .version-row {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+    }
+    .version-icon {
+      width: 44px; height: 44px; flex-shrink: 0;
+      background: linear-gradient(135deg, #6366F1, #8B5CF6);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .version-info { flex: 1; }
+    .version-info strong { display: block; font-size: 14px; font-weight: 700; }
+    .version-info span { font-size: 11px; color: rgba(255,255,255,0.4); }
+    .version-size {
+      font-size: 12px; font-weight: 700;
+      color: var(--violet);
+      background: rgba(129,140,248,0.1);
+      padding: 4px 10px; border-radius: 8px;
+    }
+
+    .btn-download {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #6366F1, #8B5CF6);
+      color: #fff;
+      font-size: 16px; font-weight: 800;
+      border: none; border-radius: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 8px 24px rgba(99,102,241,0.45);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-download:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(99,102,241,0.55); }
+    .btn-download:active { transform: translateY(0); }
+    .btn-download svg { width: 20px; height: 20px; fill: #fff; }
+
+    /* ── Steps ── */
+    .steps-card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 24px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+    }
+    .steps-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 20px; color: rgba(255,255,255,0.9); }
+
+    .step { display: flex; gap: 16px; margin-bottom: 18px; }
+    .step:last-child { margin-bottom: 0; }
+    .step-num {
+      width: 32px; height: 32px; flex-shrink: 0;
+      background: linear-gradient(135deg, #6366F1, #8B5CF6);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800;
+    }
+    .step-body strong { display: block; font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+    .step-body p { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.5; }
+    .step-body code {
+      display: inline-block; margin-top: 4px;
+      background: rgba(99,102,241,0.15);
+      color: var(--violet);
+      padding: 2px 8px; border-radius: 6px;
+      font-size: 11px; font-family: monospace;
+    }
+
+    /* ── Warning ── */
+    .warning {
+      display: flex; gap: 12px; align-items: flex-start;
+      background: rgba(251,191,36,0.08);
+      border: 1px solid rgba(251,191,36,0.25);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 24px;
+    }
+    .warning-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .warning p { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.6; }
+    .warning strong { color: var(--yellow); }
+
+    /* ── Features ── */
+    .features {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px; margin-bottom: 24px;
+    }
+    @media (max-width: 480px) { .features { grid-template-columns: 1fr; } }
+
+    .feat {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .feat-icon { font-size: 22px; flex-shrink: 0; }
+    .feat strong { display: block; font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+    .feat p { font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.4; }
+
+    /* ── Footer ── */
+    footer { text-align: center; padding-top: 20px; }
+    footer p { font-size: 11px; color: rgba(255,255,255,0.25); line-height: 1.8; }
+    footer a { color: var(--violet); text-decoration: none; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">🏥</div>
+    <h1>SGHL <span>Patient</span></h1>
+    <p>Application mobile officielle du Système de Gestion<br>Hospitalière et de Laboratoire — CHU SGHL</p>
+    <div class="badge-row">
+      <span class="badge green">✓ Version 1.0.0</span>
+      <span class="badge violet">Android 6.0+</span>
+      <span class="badge yellow">⚡ Sideloading</span>
+    </div>
+  </header>
+
+  <!-- Download card -->
+  <div class="dl-card">
+    <h2>Télécharger l'application</h2>
+    <p class="sub">Fichier APK — Installation directe sur Android</p>
+
+    <div class="version-row">
+      <div class="version-icon">📱</div>
+      <div class="version-info">
+        <strong>SGHL-Patient.apk</strong>
+        <span>Version 1.0.0 · Android 6.0 (API 23) et supérieur</span>
+      </div>
+      <span class="version-size">~25 MB</span>
+    </div>
+
+    <a href="/download/sghl.apk" class="btn-download">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/>
+      </svg>
+      Télécharger l'APK
+    </a>
+  </div>
+
+  <!-- Warning -->
+  <div class="warning">
+    <span class="warning-icon">⚠️</span>
+    <p>
+      <strong>Autoriser les sources inconnues</strong> — Android bloque par défaut les APK hors Play Store.
+      Suivez les étapes ci-dessous pour installer l'application en toute sécurité.
+    </p>
+  </div>
+
+  <!-- Steps -->
+  <div class="steps-card">
+    <h3>📋 Guide d'installation étape par étape</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Télécharger le fichier APK</strong>
+        <p>Appuyez sur le bouton "Télécharger l'APK" ci-dessus. Le fichier se télécharge dans votre dossier <code>Téléchargements</code>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Autoriser les sources inconnues</strong>
+        <p>Allez dans <code>Paramètres → Sécurité</code> (ou <code>Applications → Autoriser sources inconnues</code> selon votre Android). Activez l'option pour votre navigateur.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Ouvrir le fichier téléchargé</strong>
+        <p>Ouvrez le gestionnaire de fichiers, allez dans <code>Téléchargements</code> et appuyez sur <code>SGHL-Patient.apk</code>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Confirmer l'installation</strong>
+        <p>Android affiche un écran de confirmation. Appuyez sur <code>Installer</code> puis <code>Ouvrir</code> une fois terminé.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Se connecter</strong>
+        <p>Utilisez vos identifiants fournis par le CHU SGHL. Contactez l'accueil si vous n'avez pas encore de compte.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="features">
+    <div class="feat">
+      <span class="feat-icon">🗓️</span>
+      <div>
+        <strong>Rendez-vous</strong>
+        <p>Prenez et gérez vos RDV médicaux</p>
+      </div>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">🔬</span>
+      <div>
+        <strong>Résultats labo</strong>
+        <p>Consultez vos analyses en temps réel</p>
+      </div>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">💊</span>
+      <div>
+        <strong>Ordonnances</strong>
+        <p>Accédez à vos prescriptions PDF</p>
+      </div>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">💬</span>
+      <div>
+        <strong>Messagerie</strong>
+        <p>Chat direct avec votre médecin</p>
+      </div>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">❤️</span>
+      <div>
+        <strong>Constantes vitales</strong>
+        <p>Suivez vos indicateurs de santé</p>
+      </div>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">🧾</span>
+      <div>
+        <strong>Facturation</strong>
+        <p>Consultez vos factures et paiements</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>
+      © 2024 CHU SGHL — NLP-Core-Team<br>
+      Backend API : <a href="https://sghl-production.up.railway.app/api/v1/docs/" target="_blank">sghl-production.up.railway.app</a><br>
+      Support : <a href="mailto:support@sghl.example">support@sghl.example</a>
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>
